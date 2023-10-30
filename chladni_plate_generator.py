@@ -36,6 +36,20 @@ class MESH_OT_chladni_plate(bpy.types.Operator):
         min = 0,
         soft_max = 5,
     )
+    amplitude_a: bpy.props.FloatProperty(
+        name = "amplitude_a",
+        description = "Amplitude of component A",
+        default = 0.1,
+        min = 0,
+        soft_max = 3,
+    )
+    amplitude_b: bpy.props.FloatProperty(
+        name = "amplitude_b",
+        description = "Amplitude of component B",
+        default = 0.1,
+        min = 0,
+        soft_max = 3,
+    )
     
     @classmethod
     def poll(cls, context):
@@ -43,34 +57,27 @@ class MESH_OT_chladni_plate(bpy.types.Operator):
 
     def execute(self, context):
 
+        bpy.ops.object.mode_set(mode='OBJECT')
+
         bpy.ops.mesh.primitive_plane_add(enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
         bpy.ops.transform.resize(value=(1, 1, 1))
         bpy.ops.object.modifier_add(type='SUBSURF')
         bpy.context.object.modifiers["Subdivision"].subdivision_type = 'SIMPLE'
         bpy.context.object.modifiers["Subdivision"].levels = 6
-        
-        bpy.ops.object.modifier_apply(modifier="Subdivision")
 
-        # Define Chladni pattern parameters
-        amplitude_a = 0.1
-        amplitude_b = 0.1  # Adjust the amplitude of the Chladni pattern
-        
+        bpy.ops.object.modifier_apply(modifier="Subdivision")
+      
         bpy.context.selected_objects[0].name = 'chladni_plate_{:.2f}_{:.2f}'.format(self.frequency_a, self.frequency_b)
 
-        mode = bpy.context.active_object.mode
-        bpy.ops.object.mode_set(mode='OBJECT')
         selectedVerts = [v for v in bpy.context.active_object.data.vertices if v.select]
         for v in selectedVerts:
             print(str(v) + " "  + str(v.co))
-        bpy.ops.object.mode_set(mode=mode)
 
         for vert in selectedVerts:
             x, y, z = vert.co
-            vert.co.z += amplitude_a * math.sin(self.frequency_a * x * math.pi) * math.sin(self.frequency_b * y * math.pi)\
-                            + amplitude_b * math.sin(self.frequency_b * x * math.pi) * math.sin(self.frequency_a * y * math.pi)
+            vert.co.z += self.amplitude_a * math.sin(self.frequency_a * x * math.pi) * math.sin(self.frequency_b * y * math.pi)\
+                            + self.amplitude_b * math.sin(self.frequency_b * x * math.pi) * math.sin(self.frequency_a * y * math.pi)
 
-        mode = bpy.context.active_object.mode
-        bpy.ops.object.mode_set(mode='OBJECT')
         bpy.ops.object.shade_smooth()
 
         return {'FINISHED'}
