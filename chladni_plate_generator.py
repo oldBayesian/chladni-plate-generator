@@ -22,6 +22,27 @@ class MESH_OT_chladni_plate(bpy.types.Operator):
     bl_label = "Chladni Plate"
     bl_options = {'REGISTER', 'UNDO'}
 
+    subdivisions_x: bpy.props.IntProperty(
+        name = "subdivisions_x",
+        description = "Subdivision in the X axis",
+        default = 20,
+        min = 10,
+        soft_max = 40,
+    )
+    subdivisions_y: bpy.props.IntProperty(
+        name = "subdivisions_y",
+        description = "Subdivision in the Y axis",
+        default = 20,
+        min = 10,
+        soft_max = 40,
+    )
+    size: bpy.props.FloatProperty(
+        name = "size",
+        description = "Size of mesh",
+        default = 1,
+        min = 0,
+        soft_max = 10,
+    )
     frequency_a: bpy.props.FloatProperty(
         name = "frequency_a",
         description = "Frequency of component A",
@@ -57,15 +78,11 @@ class MESH_OT_chladni_plate(bpy.types.Operator):
 
     def execute(self, context):
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        if not context.mode == 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
 
-        bpy.ops.mesh.primitive_plane_add(enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
-        bpy.ops.transform.resize(value=(1, 1, 1))
-        bpy.ops.object.modifier_add(type='SUBSURF')
-        bpy.context.object.modifiers["Subdivision"].subdivision_type = 'SIMPLE'
-        bpy.context.object.modifiers["Subdivision"].levels = 6
-
-        bpy.ops.object.modifier_apply(modifier="Subdivision")
+        bpy.ops.mesh.primitive_grid_add(x_subdivisions=self.subdivisions_x, y_subdivisions=self.subdivisions_y, size=self.size,
+                                        enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
       
         bpy.context.selected_objects[0].name = 'chladni_plate_{:.2f}_{:.2f}'.format(self.frequency_a, self.frequency_b)
 
