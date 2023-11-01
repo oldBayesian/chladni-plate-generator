@@ -43,6 +43,18 @@ class MESH_OT_chladni_plate(bpy.types.Operator):
         min = 0,
         soft_max = 10,
     )
+    length: bpy.props.FloatProperty(
+        name = "length",
+        description = "Scale in Y of mesh",
+        default = 1,
+        min = 0,
+        soft_max = 10,
+    )
+    apply: bpy.props.BoolProperty(
+        name = "apply",
+        description = "Apply scaling",
+        default = True,
+    )
     frequency_a: bpy.props.FloatProperty(
         name = "frequency_a",
         description = "Frequency of component A",
@@ -83,6 +95,11 @@ class MESH_OT_chladni_plate(bpy.types.Operator):
 
         bpy.ops.mesh.primitive_grid_add(x_subdivisions=self.subdivisions_x, y_subdivisions=self.subdivisions_y, size=self.size,
                                         enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
+        
+        bpy.context.object.scale[0] = self.length
+
+        if self.apply:
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
       
         bpy.context.selected_objects[0].name = 'chladni_plate_{:.2f}_{:.2f}'.format(self.frequency_a, self.frequency_b)
 
